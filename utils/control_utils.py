@@ -1,5 +1,13 @@
+import streamlit as st
 import numpy as np
 import pandas as pd
+
+def show_chart(fig):
+    """Hiển thị biểu đồ Plotly tương thích mọi phiên bản Streamlit không sinh cảnh báo"""
+    try:
+        st.plotly_chart(fig, width="stretch")
+    except (TypeError, ValueError):
+        st.plotly_chart(fig, use_container_width=True)
 
 def pade_approx(theta, order=2):
     """Xấp xỉ khâu trễ e^(-theta*s) theo Padé bậc 1 hoặc bậc 2"""
