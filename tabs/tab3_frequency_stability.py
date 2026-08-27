@@ -8,6 +8,50 @@ from utils.control_utils import compute_routh_table
 
 def render():
     st.header("3. Khảo Sát Tính Ổn Định & Đặc Tính Miền Tần Số")
+    
+    with st.expander("📖 **Nguyên lý tính ổn định & Đặc tính tần số (Routh-Hurwitz & Bode)**", expanded=True):
+        col_s1, col_s2 = st.columns([1.2, 1])
+        with col_s1:
+            st.markdown("""
+            **1. Tiêu chuẩn đại số Routh-Hurwitz:**
+            * Cho phương trình đặc trưng: $a_n s^n + a_{n-1} s^{n-1} + \\dots + a_1 s + a_0 = 0$.
+            * **Điều kiện cần:** Tất cả hệ số $a_i$ phải cùng dấu và khác 0.
+            * **Điều kiện đủ:** Tất cả các phần tử ở cột 1 của bảng Routh đều mang giá trị dương.
+            * **Định lý:** *Số lần đổi dấu các phần tử ở cột 1 bằng đúng số nghiệm có phần thực dương (nằm bên phải trục ảo).*
+
+            **2. Độ dự trữ ổn định trên biểu đồ Bode:**
+            * **Tần số cắt biên ($\\omega_{gc}$):** Tần số tại đó $|G(j\\omega)| = 1$ ($0\\text{ dB}$).
+              * **Độ dự trữ pha ($PM$ - Phase Margin):** $PM = 180^\\circ + \\angle G(j\\omega_{gc})$. Hệ ổn định khi $PM > 0$ (khuyến nghị $PM \\ge 45^\\circ - 60^\\circ$).
+            * **Tần số cắt pha ($\\omega_{pc}$):** Tần số tại đó $\\angle G(j\\omega) = -180^\\circ$.
+              * **Độ dự trữ biên ($GM$ - Gain Margin):** $GM = -20\\log_{10}|G(j\\omega_{pc})|\\text{ dB}$. Hệ ổn định khi $GM > 0\\text{ dB}$ (khuyến nghị $GM \\ge 6\\text{ dB}$).
+            """)
+        with col_s2:
+            st.markdown("""
+            <div style="background-color: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                <h5 style="margin-top:0; color:#333;">Vùng Ổn Định Mặt Phẳng Phức s</h5>
+                <svg width="100%" height="190" viewBox="0 0 340 190" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="20" width="140" height="150" fill="#e8f5e9" opacity="0.8"/>
+                    <rect x="160" y="20" width="160" height="150" fill="#ffebee" opacity="0.8"/>
+                    
+                    <line x1="20" y1="95" x2="320" y2="95" stroke="#333" stroke-width="2"/>
+                    <line x1="160" y1="20" x2="160" y2="170" stroke="#333" stroke-width="2"/>
+                    <text x="310" y="115" font-family="Arial" font-size="12" fill="#333">σ (Re)</text>
+                    <text x="165" y="32" font-family="Arial" font-size="12" fill="#333">jω (Im)</text>
+                    
+                    <text x="85" y="80" font-family="Arial" font-size="12" font-weight="bold" fill="#2e7d32" text-anchor="middle">VÙNG ỔN ĐỊNH</text>
+                    <text x="85" y="100" font-family="Arial" font-size="10" fill="#2e7d32" text-anchor="middle">(Nửa trái: Re(s) < 0)</text>
+                    
+                    <text x="240" y="80" font-family="Arial" font-size="12" font-weight="bold" fill="#c62828" text-anchor="middle">MẤT ỔN ĐỊNH</text>
+                    <text x="240" y="100" font-family="Arial" font-size="10" fill="#c62828" text-anchor="middle">(Nửa phải: Re(s) > 0)</text>
+                    
+                    <text x="95" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#1b5e20">✕</text>
+                    <text x="95" y="145" font-family="Arial" font-size="16" font-weight="bold" fill="#1b5e20">✕</text>
+                </svg>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.divider()
+
     raw_den = st.text_input("Nhập các hệ số mẫu số (cách nhau bởi dấu phẩy):", "1, 3, 3, 2")
     raw_num = st.text_input("Nhập các hệ số tử số:", "2")
     
@@ -25,9 +69,9 @@ def render():
             st.dataframe(df_routh.style.format("{:.3f}"))
             
             if is_stab:
-                st.success("✅ **Hệ thống ỔN ĐỊNH**: Cột 1 không đổi dấu.")
+                st.success("✅ **Hệ thống ỔN ĐỊNH**: Cột 1 không đổi dấu (tất cả các nghiệm có phần thực âm).")
             else:
-                st.error(f"❌ **Hệ thống KHÔNG ỔN ĐỊNH**: Có **{sc_count}** lần đổi dấu ở cột 1.")
+                st.error(f"❌ **Hệ thống KHÔNG ỔN ĐỊNH**: Có **{sc_count}** lần đổi dấu ở cột 1 (tương ứng {sc_count} nghiệm bên phải trục ảo).")
                 
             st.subheader("📍 Mặt phẳng Cực - Zero (Pole-Zero Map)")
             poles = sys_t3.poles

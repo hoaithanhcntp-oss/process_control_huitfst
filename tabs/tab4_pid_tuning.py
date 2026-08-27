@@ -5,8 +5,67 @@ from plotly.subplots import make_subplots
 
 def render():
     st.header("4. Thiết Kế & Chỉnh Định Bộ Điều Khiển PID")
-    col_pid_ctrl, col_pid_plot = st.columns([1, 2])
     
+    with st.expander("📖 **Nguyên lý cấu trúc PID & Quy tắc chỉnh định (Ziegler-Nichols & Cohen-Coon)**", expanded=True):
+        col_pid_th1, col_pid_th2 = st.columns([1.2, 1])
+        with col_pid_th1:
+            st.markdown("""
+            **1. Cấu trúc hàm truyền bộ điều khiển PID song song:**
+            $$C(s) = K_p + \\frac{K_i}{s} + K_d s = K_p \\left(1 + \\frac{1}{T_i s} + T_d s\\right)$$
+            * **Khâu tỷ lệ ($K_p$):** Tăng tốc độ đáp ứng, giảm sai số nhưng $K_p$ quá lớn gây vọt lố và dao động.
+            * **Khâu tích phân ($K_i = K_p/T_i$):** Tích lũy sai số theo thời gian để **triệt tiêu hoàn toàn sai số xác lập ($e_{ss} \\to 0$)**.
+            * **Khâu vi phân ($K_d = K_p \\cdot T_d$):** Phản ứng theo tốc độ biến thiên sai số, đóng vai trò 'giảm xóc' ghìm vọt lố.
+
+            **2. Quy tắc chỉnh định Ziegler-Nichols 1 (dựa trên $K, \\tau, \\theta$):**
+            * $P$: $K_p = \\frac{\\tau}{K\\theta}$
+            * $PI$: $K_p = 0.9 \\frac{\\tau}{K\\theta}, \\quad T_i = 3.33\\theta$
+            * $PID$: $K_p = 1.2 \\frac{\\tau}{K\\theta}, \\quad T_i = 2\\theta, \\quad T_d = 0.5\\theta$
+            """)
+        with col_pid_th2:
+            st.markdown("""
+            <div style="background-color: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center;">
+                <h5 style="margin-top:0; color:#333;">Sơ Đồ Vòng Điều Khiển Kín (Feedback Control Loop)</h5>
+                <svg width="100%" height="160" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="60" r="14" fill="#fff" stroke="#333" stroke-width="2"/>
+                    <text x="60" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">Σ</text>
+                    <text x="40" y="52" font-family="Arial" font-size="12" font-weight="bold" fill="green">+</text>
+                    <text x="65" y="88" font-family="Arial" font-size="14" font-weight="bold" fill="red">-</text>
+                    
+                    <line x1="10" y1="60" x2="46" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arr_pid)"/>
+                    <text x="25" y="48" font-family="Arial" font-size="11" font-weight="bold">r(t)</text>
+                    
+                    <line x1="74" y1="60" x2="110" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arr_pid)"/>
+                    <text x="92" y="48" font-family="Arial" font-size="11" fill="#333">e(t)</text>
+                    
+                    <rect x="110" y="38" width="80" height="44" rx="5" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+                    <text x="150" y="65" font-family="Arial" font-size="12" font-weight="bold" fill="#0d47a1" text-anchor="middle">PID C(s)</text>
+                    
+                    <line x1="190" y1="60" x2="230" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arr_pid)"/>
+                    <text x="210" y="48" font-family="Arial" font-size="11" fill="#333">u(t)</text>
+                    
+                    <rect x="230" y="38" width="90" height="44" rx="5" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+                    <text x="275" y="65" font-family="Arial" font-size="12" font-weight="bold" fill="#e65100" text-anchor="middle">Plant G(s)</text>
+                    
+                    <line x1="320" y1="60" x2="385" y2="60" stroke="#333" stroke-width="2" marker-end="url(#arr_pid)"/>
+                    <text x="365" y="48" font-family="Arial" font-size="11" font-weight="bold">y(t)</text>
+                    
+                    <line x1="350" y1="60" x2="350" y2="125" stroke="#333" stroke-width="2"/>
+                    <line x1="350" y1="125" x2="60" y2="125" stroke="#333" stroke-width="2"/>
+                    <line x1="60" y1="125" x2="60" y2="74" stroke="#333" stroke-width="2" marker-end="url(#arr_pid)"/>
+                    <text x="210" y="142" font-family="Arial" font-size="11" fill="#555" text-anchor="middle">Đường phản hồi âm H(s)=1</text>
+                    
+                    <defs>
+                        <marker id="arr_pid" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#333"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.divider()
+
+    col_pid_ctrl, col_pid_plot = st.columns([1, 2])
     with col_pid_ctrl:
         st.subheader("Đối tượng điều khiển FOPDT")
         kp_p = st.number_input("K (Khuếch đại đối tượng):", value=1.0, step=0.1)
